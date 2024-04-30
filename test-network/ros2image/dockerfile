@@ -1,0 +1,27 @@
+# 使用ROS的开发环境镜像作为基础镜像
+FROM sxiaocaicai/new-ros-full-vnc:16.04
+
+# 安装Go语言环境
+# RUN wget https://go.dev/dl/go1.15.1.linux-amd64.tar.gz \
+#     && tar -xzf go1.15.1.linux-amd64.tar.gz -C /usr/local \
+#     && rm go1.15.1.linux-amd64.tar.gz
+RUN apt update && apt install golang -y
+
+# 设置Go环境变量
+# ENV PATH="/usr/local/go/bin:${PATH}"
+# ENV GOPATH="/root/go"
+# ENV GOROOT="/usr/local/go"
+
+# 切换工作目录
+WORKDIR /root/catkin_ws/src/
+
+RUN git clone https://github.com/bluenviron/goroslib.git
+
+
+
+# 复制你的ROS 2节点代码到工作空间
+COPY ./ros2-fabric-integration/application_go /root/catkin_ws/src/application_go
+
+# 切换工作目录
+WORKDIR /root/catkin_ws/src/application_go  
+

@@ -1,0 +1,3 @@
+[submodule "test-network/ros2image/ros2-fabric-integration"]
+	path = test-network/ros2image/ros2-fabric-integration
+	url = https://github.com/TIERS/ros2-fabric-integration.git
