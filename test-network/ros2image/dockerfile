@@ -1,27 +1,43 @@
 # 使用ROS的开发环境镜像作为基础镜像
-FROM sxiaocaicai/new-ros-full-vnc:16.04
+FROM ros:melodic
 
-# 安装Go语言环境
-# RUN wget https://go.dev/dl/go1.15.1.linux-amd64.tar.gz \
-#     && tar -xzf go1.15.1.linux-amd64.tar.gz -C /usr/local \
-#     && rm go1.15.1.linux-amd64.tar.gz
-RUN apt update && apt install golang -y
+# 安装依赖的软件包
+RUN apt update && \
+    apt install -y wget git
+
+# 下载并安装Go 1.20版本
+RUN wget https://go.dev/dl/go1.20.linux-amd64.tar.gz && \
+    tar -xzf go1.20.linux-amd64.tar.gz -C /usr/local && \
+    rm go1.20.linux-amd64.tar.gz
 
 # 设置Go环境变量
-# ENV PATH="/usr/local/go/bin:${PATH}"
-# ENV GOPATH="/root/go"
-# ENV GOROOT="/usr/local/go"
+ENV PATH="/usr/local/go/bin:${PATH}"
 
-# 切换工作目录
-WORKDIR /root/catkin_ws/src/
+# 切换工作目录到/root
+WORKDIR /root
 
-RUN git clone https://github.com/bluenviron/goroslib.git
+# 创建ROS工作空间目录
+RUN mkdir -p catkin_ws/src && \
+    cd catkin_ws/src && \
+    /bin/bash -c "source /opt/ros/melodic/setup.bash; catkin_init_workspace"
 
+# 切换工作目录到根目录的catkin_ws
+WORKDIR /root/catkin_ws
 
+# 运行catkin_make来构建工作空间
+RUN /bin/bash -c "source /opt/ros/melodic/setup.bash; catkin_make"
 
 # 复制你的ROS 2节点代码到工作空间
 COPY ./ros2-fabric-integration/application_go /root/catkin_ws/src/application_go
 
-# 切换工作目录
-WORKDIR /root/catkin_ws/src/application_go  
+# 克隆goroslib到工作空间
+RUN git clone https://github.com/bluenviron/goroslib.git src/goroslib
 
+# # 再次运行catkin_make来构建包括你的节点在内的所有包
+# RUN /bin/bash -c "source /opt/ros/melodic/setup.bash; catkin_make"
+
+# 设置工作空间环境变量
+ENV ROS_PACKAGE_PATH="/root/catkin_ws/src:${ROS_PACKAGE_PATH}"
+
+# 切换工作目录到你的应用目录
+WORKDIR /root/catkin_ws/src/application_go
